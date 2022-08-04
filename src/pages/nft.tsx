@@ -4,16 +4,13 @@ import {NFTView} from "../views";
 
 const NFT: NextPage = (props) => {
     return (
-        <div>
+        <>
             <Head>
-                <title>Solana Scaffold</title>
-                <meta
-                    name="description"
-                    content="NFT basics"
-                />
+                <title>Sesame - Mind NFT</title>
+                <meta name="description" content="Sesame Mint NFT"/>
             </Head>
             <NFTView/>
-        </div>
+        </>
     );
 };
 

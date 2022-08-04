@@ -1,3 +1,14 @@
+# Notes
+
+Links
+
+- https://www.youtube.com/watch?v=vt8GUw_PDqM
+- https://lorisleiva.com/create-a-solana-dapp-from-scratch/integrating-with-solana-wallets
+- https://backoffice.eattheblocks.com/getting-started-with-anchor-for-solana/
+
+---
+---
+
 # Solana dApp Scaffold Next
 
 The Solana dApp Scaffold repos are meant to house good starting scaffolds for ecosystem developers to get up and running
@@ -29,7 +40,7 @@ yarn dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+You can start editing the page by modifying `pages/docs.tsx`. The page auto-updates as you edit the file.
 
 [API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed
 on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited

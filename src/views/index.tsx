@@ -1,4 +1,4 @@
 export {HomeView} from "./home";
-export {BasicsView} from "./basics";
-export {TokenView} from "./token";
+export {DocsView} from "./docs";
+export {EventView} from "./event";
 export {NFTView} from "./nft";

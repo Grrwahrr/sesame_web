@@ -30,7 +30,7 @@ export const SignMessage: FC = () => {
     return signMessage ? (
         <div>
             <button
-                className="btn px-8 m-2 bg-gradient-to-r from-[#9945FF] to-[#14F195] hover:from-pink-500 hover:to-yellow-500 ..."
+                className="btn px-8 m-2 bg-gradient-to-r from-[#CC6677] to-[#00AADD] hover:from-pink-500 hover:to-yellow-500 ..."
                 onClick={onClick} disabled={!publicKey}
             >
                 <span> Sign Message </span>
