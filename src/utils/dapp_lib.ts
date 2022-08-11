@@ -13,9 +13,13 @@ export const ticketProgram = (connection, anchorWallet) => {
     return new anchor.Program<Sesame>(idl, ticketAppId, provider);
 }
 
-export const notifyTxError = (message: string, error, tx: TransactionSignature) => {
+export const notifyTxError = (message: string, error: any, tx: TransactionSignature) => {
     notify({type: 'error', message: message, description: error?.message, txid: tx});
     console.log('error', message, error?.message, tx);
+}
+
+export const notifyTxSuccess = (message: string, tx: TransactionSignature) => {
+    notify({type: 'success', message: message, txid: tx});
 }
 
 export const deriveOrganizer = (program: anchor.Program<Sesame>, owner: anchor.web3.PublicKey) =>

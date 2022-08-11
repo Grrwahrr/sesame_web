@@ -1,5 +1,25 @@
 # Notes
 
+#### Debate
+
+Minting needs the events key. Either I store in QR and move to this website, or I have this with the organizer.
+
+Manually creating tickets should be on the organizer site, as I can't mail them out from here anyway.
+
+Deleting could be here, as I have no control over payments anyway? At least not now.
+
+Create a key from seeds
+
+```javascript
+Keypair.fromSeed(Uint8Array.from([
+   174, 47, 154, 16, 202, 193, 206, 113, 199, 190, 53, 133, 169, 175, 31, 56,
+   222, 53, 138, 189, 224, 216, 117, 173, 10, 149, 53, 45, 73, 251, 237, 246,
+   15, 185, 186, 82, 177, 240, 148, 69, 241, 227, 167, 80, 141, 89, 240, 121,
+   121, 35, 172, 247, 68, 251, 226, 218, 48, 63, 176, 109, 168, 89, 238, 135,
+]))
+console.log(PublicKey.isOnCurve(key.toBytes()));
+```
+
 Links
 
 - https://www.youtube.com/watch?v=vt8GUw_PDqM

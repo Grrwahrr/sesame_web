@@ -6,7 +6,7 @@ import {useConnection, useWallet} from "@solana/wallet-adapter-react";
 import useUserSOLBalanceStore from "../stores/useUserSOLBalanceStore";
 
 export const DocsView: FC = ({}) => {
-    const wallet = useWallet();//TODO MYTODO https://lorisleiva.com/create-a-solana-dapp-from-scratch/integrating-with-solana-wallets
+    const wallet = useWallet();
     const {connection} = useConnection();
 
     const balance = useUserSOLBalanceStore((s) => s.balance)
@@ -28,9 +28,6 @@ export const DocsView: FC = ({}) => {
                 <div className="p-2 text-center">
                     <SignMessage/>
                     <SendTransaction/>
-                    {<p>&lt; your content &gt;</p>}
-                </div>
-                <div>
                     <RequestAirdrop/>
                 </div>
                 <div className="text-center">

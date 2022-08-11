@@ -57,7 +57,8 @@ export const AppBar: FC = props => {
                                       d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
                         </div>
-                        <ul tabIndex={0} className="p-3 shadow menu dropdown-content bg-base-100 rounded-box w-52">
+                        <ul tabIndex={0}
+                            className="p-3 shadow menu dropdown-content bg-neutral rounded-box w-52 outline outline-blue-500">
                             <li>
                                 <div className="form-control">
                                     <label className="cursor-pointer label">
@@ -67,15 +68,9 @@ export const AppBar: FC = props => {
                                     </label>
                                 </div>
                             </li>
-                            <li>
-                                <a>Main Net</a>
-                            </li>
-                            <li>
-                                <a>Dev Net</a>
-                            </li>
-                            <li>
-                                <a>Local Net</a>
-                            </li>
+                            <li><a>Main Net</a></li>
+                            <li><a>Dev Net</a></li>
+                            <li><a>Local Net</a></li>
                         </ul>
                     </div>
                     <WalletMultiButton className="btn btn-ghost mr-2"/>
