@@ -99,6 +99,22 @@ export type Sesame = {
         {
           "name": "ticketsLimit",
           "type": "u16"
+        },
+        {
+          "name": "timestamp",
+          "type": "u64"
+        },
+        {
+          "name": "locationType",
+          "type": "u8"
+        },
+        {
+          "name": "location",
+          "type": "string"
+        },
+        {
+          "name": "imageUrl",
+          "type": "string"
         }
       ]
     },
@@ -136,12 +152,7 @@ export type Sesame = {
           "isSigner": false
         }
       ],
-      "args": [
-        {
-          "name": "seatId",
-          "type": "string"
-        }
-      ]
+      "args": []
     },
     {
       "name": "ticketDelete",
@@ -158,7 +169,7 @@ export type Sesame = {
         },
         {
           "name": "event",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -174,8 +185,8 @@ export type Sesame = {
       ],
       "args": [
         {
-          "name": "seatId",
-          "type": "string"
+          "name": "ticketOffset",
+          "type": "u16"
         }
       ]
     },
@@ -205,8 +216,8 @@ export type Sesame = {
       ],
       "args": [
         {
-          "name": "seatId",
-          "type": "string"
+          "name": "ticketOffset",
+          "type": "u16"
         }
       ]
     },
@@ -261,8 +272,8 @@ export type Sesame = {
       ],
       "args": [
         {
-          "name": "seatId",
-          "type": "string"
+          "name": "ticketOffset",
+          "type": "u16"
         }
       ]
     },
@@ -336,11 +347,310 @@ export type Sesame = {
         {
           "name": "ticketsLimit",
           "type": "u16"
+        },
+        {
+          "name": "timestamp",
+          "type": "u64"
+        },
+        {
+          "name": "locationType",
+          "type": "u8"
+        },
+        {
+          "name": "location",
+          "type": "string"
+        },
+        {
+          "name": "imageUrl",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "createEventPass",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "organizer",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "passAuthorityIssuer",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "passAuthorityDelete",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "eventPass",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "website",
+          "type": "string"
+        },
+        {
+          "name": "ticketsLimit",
+          "type": "u16"
+        },
+        {
+          "name": "imageUrl",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "eventPassAddEvent",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "eventPass",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "event",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "eventPassValidEvent",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "eventPassHolderCreate",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "eventPass",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventPassHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventPassOwner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "ticketIssueForEventPass",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "eventPass",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "eventPassValidEvent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "eventPassHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventPassOwner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "eventPassHolderTicket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "event",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ticket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ticketOwner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "eventOffset",
+          "type": "u16"
+        },
+        {
+          "name": "holderOffset",
+          "type": "u16"
         }
       ]
     }
   ],
   "accounts": [
+    {
+      "name": "eventPassHolderTicket",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "eventPassHolder",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "publicKey"
+          },
+          {
+            "name": "ticketsCreated",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "eventPassValidEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "event",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "eventPass",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "version",
+            "type": "u8"
+          },
+          {
+            "name": "admin",
+            "type": "publicKey"
+          },
+          {
+            "name": "passAuthorityIssuer",
+            "type": "publicKey"
+          },
+          {
+            "name": "passAuthorityDelete",
+            "type": "publicKey"
+          },
+          {
+            "name": "ticketsLimit",
+            "type": "u16"
+          },
+          {
+            "name": "counterEvents",
+            "type": "u16"
+          },
+          {
+            "name": "counterHolders",
+            "type": "u16"
+          },
+          {
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "name": "website",
+            "type": "string"
+          },
+          {
+            "name": "artwork",
+            "type": "string"
+          }
+        ]
+      }
+    },
     {
       "name": "event",
       "type": {
@@ -349,6 +659,10 @@ export type Sesame = {
           {
             "name": "version",
             "type": "u8"
+          },
+          {
+            "name": "admin",
+            "type": "publicKey"
           },
           {
             "name": "ticketAuthorityIssuer",
@@ -371,12 +685,12 @@ export type Sesame = {
             "type": "u16"
           },
           {
-            "name": "timestamp",
-            "type": "u64"
+            "name": "ticketsDeleted",
+            "type": "u16"
           },
           {
-            "name": "timezone",
-            "type": "i16"
+            "name": "timestamp",
+            "type": "u64"
           },
           {
             "name": "title",
@@ -409,7 +723,11 @@ export type Sesame = {
         "kind": "struct",
         "fields": [
           {
-            "name": "counter",
+            "name": "counterEvents",
+            "type": "u32"
+          },
+          {
+            "name": "counterPasses",
             "type": "u32"
           },
           {
@@ -449,13 +767,13 @@ export type Sesame = {
         "kind": "enum",
         "variants": [
           {
-            "name": "TXT"
+            "name": "Txt"
           },
           {
-            "name": "GPS"
+            "name": "Gps"
           },
           {
-            "name": "URL"
+            "name": "Url"
           }
         ]
       }
@@ -480,6 +798,16 @@ export type Sesame = {
   ],
   "events": [
     {
+      "name": "EventPassCreated",
+      "fields": [
+        {
+          "name": "eventPass",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
       "name": "EventCreated",
       "fields": [
         {
@@ -500,6 +828,36 @@ export type Sesame = {
       ]
     },
     {
+      "name": "EventPassEventAdded",
+      "fields": [
+        {
+          "name": "eventPass",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "event",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "EventPassHolderCreated",
+      "fields": [
+        {
+          "name": "eventPass",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "eventPassHolder",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
       "name": "TicketCheckedIn",
       "fields": [
         {
@@ -513,8 +871,8 @@ export type Sesame = {
           "index": false
         },
         {
-          "name": "seatId",
-          "type": "string",
+          "name": "ticketOffset",
+          "type": "u16",
           "index": false
         }
       ]
@@ -533,8 +891,33 @@ export type Sesame = {
           "index": false
         },
         {
-          "name": "seatId",
-          "type": "string",
+          "name": "ticketOffset",
+          "type": "u16",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "TicketIssuedForEventPass",
+      "fields": [
+        {
+          "name": "eventPass",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "eventPassHolder",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "event",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "ticket",
+          "type": "publicKey",
           "index": false
         }
       ]
@@ -550,11 +933,6 @@ export type Sesame = {
         {
           "name": "ticket",
           "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "seatId",
-          "type": "string",
           "index": false
         }
       ]
@@ -573,8 +951,8 @@ export type Sesame = {
           "index": false
         },
         {
-          "name": "seatId",
-          "type": "string",
+          "name": "ticketOffset",
+          "type": "u16",
           "index": false
         },
         {
@@ -630,6 +1008,21 @@ export type Sesame = {
       "code": 6008,
       "name": "InvalidTicketAuthorityDelete",
       "msg": "The event creator must not be the ticket delete authority"
+    },
+    {
+      "code": 6009,
+      "name": "InvalidPassAuthorityIssuer",
+      "msg": "The event pass creator must not be the pass issue authority"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidPassAuthorityDelete",
+      "msg": "The event pass creator must not be the pass delete authority"
+    },
+    {
+      "code": 6011,
+      "name": "NoMoreTicketsLeftInEventPass",
+      "msg": "This event pass can not issue any more tickets"
     }
   ]
 };
@@ -734,6 +1127,22 @@ export const IDL: Sesame = {
         {
           "name": "ticketsLimit",
           "type": "u16"
+        },
+        {
+          "name": "timestamp",
+          "type": "u64"
+        },
+        {
+          "name": "locationType",
+          "type": "u8"
+        },
+        {
+          "name": "location",
+          "type": "string"
+        },
+        {
+          "name": "imageUrl",
+          "type": "string"
         }
       ]
     },
@@ -771,12 +1180,7 @@ export const IDL: Sesame = {
           "isSigner": false
         }
       ],
-      "args": [
-        {
-          "name": "seatId",
-          "type": "string"
-        }
-      ]
+      "args": []
     },
     {
       "name": "ticketDelete",
@@ -793,7 +1197,7 @@ export const IDL: Sesame = {
         },
         {
           "name": "event",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -809,8 +1213,8 @@ export const IDL: Sesame = {
       ],
       "args": [
         {
-          "name": "seatId",
-          "type": "string"
+          "name": "ticketOffset",
+          "type": "u16"
         }
       ]
     },
@@ -840,8 +1244,8 @@ export const IDL: Sesame = {
       ],
       "args": [
         {
-          "name": "seatId",
-          "type": "string"
+          "name": "ticketOffset",
+          "type": "u16"
         }
       ]
     },
@@ -896,8 +1300,8 @@ export const IDL: Sesame = {
       ],
       "args": [
         {
-          "name": "seatId",
-          "type": "string"
+          "name": "ticketOffset",
+          "type": "u16"
         }
       ]
     },
@@ -971,11 +1375,310 @@ export const IDL: Sesame = {
         {
           "name": "ticketsLimit",
           "type": "u16"
+        },
+        {
+          "name": "timestamp",
+          "type": "u64"
+        },
+        {
+          "name": "locationType",
+          "type": "u8"
+        },
+        {
+          "name": "location",
+          "type": "string"
+        },
+        {
+          "name": "imageUrl",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "createEventPass",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "organizer",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "passAuthorityIssuer",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "passAuthorityDelete",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "eventPass",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "website",
+          "type": "string"
+        },
+        {
+          "name": "ticketsLimit",
+          "type": "u16"
+        },
+        {
+          "name": "imageUrl",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "eventPassAddEvent",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "eventPass",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "event",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "eventPassValidEvent",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "eventPassHolderCreate",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "eventPass",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventPassHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventPassOwner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "ticketIssueForEventPass",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "eventPass",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "eventPassValidEvent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "eventPassHolder",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "eventPassOwner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "eventPassHolderTicket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "event",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ticket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ticketOwner",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "eventOffset",
+          "type": "u16"
+        },
+        {
+          "name": "holderOffset",
+          "type": "u16"
         }
       ]
     }
   ],
   "accounts": [
+    {
+      "name": "eventPassHolderTicket",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "eventPassHolder",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "publicKey"
+          },
+          {
+            "name": "ticketsCreated",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "eventPassValidEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "event",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "eventPass",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "version",
+            "type": "u8"
+          },
+          {
+            "name": "admin",
+            "type": "publicKey"
+          },
+          {
+            "name": "passAuthorityIssuer",
+            "type": "publicKey"
+          },
+          {
+            "name": "passAuthorityDelete",
+            "type": "publicKey"
+          },
+          {
+            "name": "ticketsLimit",
+            "type": "u16"
+          },
+          {
+            "name": "counterEvents",
+            "type": "u16"
+          },
+          {
+            "name": "counterHolders",
+            "type": "u16"
+          },
+          {
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "name": "website",
+            "type": "string"
+          },
+          {
+            "name": "artwork",
+            "type": "string"
+          }
+        ]
+      }
+    },
     {
       "name": "event",
       "type": {
@@ -984,6 +1687,10 @@ export const IDL: Sesame = {
           {
             "name": "version",
             "type": "u8"
+          },
+          {
+            "name": "admin",
+            "type": "publicKey"
           },
           {
             "name": "ticketAuthorityIssuer",
@@ -1006,12 +1713,12 @@ export const IDL: Sesame = {
             "type": "u16"
           },
           {
-            "name": "timestamp",
-            "type": "u64"
+            "name": "ticketsDeleted",
+            "type": "u16"
           },
           {
-            "name": "timezone",
-            "type": "i16"
+            "name": "timestamp",
+            "type": "u64"
           },
           {
             "name": "title",
@@ -1044,7 +1751,11 @@ export const IDL: Sesame = {
         "kind": "struct",
         "fields": [
           {
-            "name": "counter",
+            "name": "counterEvents",
+            "type": "u32"
+          },
+          {
+            "name": "counterPasses",
             "type": "u32"
           },
           {
@@ -1084,13 +1795,13 @@ export const IDL: Sesame = {
         "kind": "enum",
         "variants": [
           {
-            "name": "TXT"
+            "name": "Txt"
           },
           {
-            "name": "GPS"
+            "name": "Gps"
           },
           {
-            "name": "URL"
+            "name": "Url"
           }
         ]
       }
@@ -1115,6 +1826,16 @@ export const IDL: Sesame = {
   ],
   "events": [
     {
+      "name": "EventPassCreated",
+      "fields": [
+        {
+          "name": "eventPass",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
       "name": "EventCreated",
       "fields": [
         {
@@ -1135,6 +1856,36 @@ export const IDL: Sesame = {
       ]
     },
     {
+      "name": "EventPassEventAdded",
+      "fields": [
+        {
+          "name": "eventPass",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "event",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "EventPassHolderCreated",
+      "fields": [
+        {
+          "name": "eventPass",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "eventPassHolder",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
       "name": "TicketCheckedIn",
       "fields": [
         {
@@ -1148,8 +1899,8 @@ export const IDL: Sesame = {
           "index": false
         },
         {
-          "name": "seatId",
-          "type": "string",
+          "name": "ticketOffset",
+          "type": "u16",
           "index": false
         }
       ]
@@ -1168,8 +1919,33 @@ export const IDL: Sesame = {
           "index": false
         },
         {
-          "name": "seatId",
-          "type": "string",
+          "name": "ticketOffset",
+          "type": "u16",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "TicketIssuedForEventPass",
+      "fields": [
+        {
+          "name": "eventPass",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "eventPassHolder",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "event",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "ticket",
+          "type": "publicKey",
           "index": false
         }
       ]
@@ -1185,11 +1961,6 @@ export const IDL: Sesame = {
         {
           "name": "ticket",
           "type": "publicKey",
-          "index": false
-        },
-        {
-          "name": "seatId",
-          "type": "string",
           "index": false
         }
       ]
@@ -1208,8 +1979,8 @@ export const IDL: Sesame = {
           "index": false
         },
         {
-          "name": "seatId",
-          "type": "string",
+          "name": "ticketOffset",
+          "type": "u16",
           "index": false
         },
         {
@@ -1265,6 +2036,21 @@ export const IDL: Sesame = {
       "code": 6008,
       "name": "InvalidTicketAuthorityDelete",
       "msg": "The event creator must not be the ticket delete authority"
+    },
+    {
+      "code": 6009,
+      "name": "InvalidPassAuthorityIssuer",
+      "msg": "The event pass creator must not be the pass issue authority"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidPassAuthorityDelete",
+      "msg": "The event pass creator must not be the pass delete authority"
+    },
+    {
+      "code": 6011,
+      "name": "NoMoreTicketsLeftInEventPass",
+      "msg": "This event pass can not issue any more tickets"
     }
   ]
 };

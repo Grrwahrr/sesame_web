@@ -34,8 +34,32 @@ export const deriveEvent = (program: anchor.Program<Sesame>, owner: anchor.web3.
         program.programId
     );
 
-export const deriveTicket = (program: anchor.Program<Sesame>, event: anchor.web3.PublicKey, seatId: string) =>
+export const deriveTicket = (program: anchor.Program<Sesame>, event: anchor.web3.PublicKey, offset: number) =>
     anchor.web3.PublicKey.findProgramAddress(
-        [textEncoder.encode("Ticket"), event.toBuffer(), Buffer.from(seatId, "utf-8")],
+        [textEncoder.encode("Ticket"), event.toBuffer(), new anchor.BN(offset).toArrayLike(Buffer, "le", 2)],
+        program.programId
+    );
+
+export const deriveEventPass = (program: anchor.Program<Sesame>, owner: anchor.web3.PublicKey, offset: number) =>
+    anchor.web3.PublicKey.findProgramAddress(
+        [textEncoder.encode("EventPass"), owner.toBuffer(), new anchor.BN(offset).toArrayLike(Buffer, "le", 4)],
+        program.programId
+    );
+
+export const deriveEventPassValidEvent = (program: anchor.Program<Sesame>, eventPass: anchor.web3.PublicKey, offset: number) =>
+    anchor.web3.PublicKey.findProgramAddress(
+        [textEncoder.encode("EventPassValidEvent"), eventPass.toBuffer(), new anchor.BN(offset).toArrayLike(Buffer, "le", 2)],
+        program.programId
+    );
+
+export const deriveEventPassHolder = (program: anchor.Program<Sesame>, eventPass: anchor.web3.PublicKey, offset: number) =>
+    anchor.web3.PublicKey.findProgramAddress(
+        [textEncoder.encode("EventPassHolder"), eventPass.toBuffer(), new anchor.BN(offset).toArrayLike(Buffer, "le", 2)],
+        program.programId
+    );
+
+export const deriveEventPassHolderTicket = (program: anchor.Program<Sesame>, eventPassHolder: anchor.web3.PublicKey, event: anchor.web3.PublicKey) =>
+    anchor.web3.PublicKey.findProgramAddress(
+        [textEncoder.encode("EventPassHolderTicket"), eventPassHolder.toBuffer(), event.toBuffer()],
         program.programId
     );

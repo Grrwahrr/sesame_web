@@ -1,5 +1,11 @@
 # Notes
 
+TODO
+
+- add a donate button to donate SOL
+- sales pitch on home
+- documentation page
+
 #### Debate
 
 Minting needs the events key. Either I store in QR and move to this website, or I have this with the organizer.
@@ -18,6 +24,61 @@ Keypair.fromSeed(Uint8Array.from([
    121, 35, 172, 247, 68, 251, 226, 218, 48, 63, 176, 109, 168, 89, 238, 135,
 ]))
 console.log(PublicKey.isOnCurve(key.toBytes()));
+```
+
+```
+//TODO store these from real data, ADD THE OFFSET!
+
+//     {
+//         offset: 0,
+//         ticketsLimit: 500,
+//         ticketsIssued: 12,
+//         timestamp: 1661256000,
+//         locationType: "URL",
+//         location: "https://www.google.com",
+//         title: "Awesome Film Festival",
+//         website: "https://www.google.com",
+//         artwork: "https://blog.walls.io/wp-content/uploads/2017/02/ideas-for-making-event-more-social.jpg"
+//     },
+//     {
+//         offset: 1,
+//         ticketsLimit: 200,
+//         ticketsIssued: 180,
+//         timestamp: 1663689600,
+//         locationType: "GPS",
+//         location: "52.542417,13.429639",
+//         title: "Crazy Horse Show",
+//         website: "https://www.google.com",
+//         artwork: "https://intheory.events/wp-content/uploads/2020/11/op_livestreaming_event_stage-1-1536x864.jpg"
+//     },
+//     {
+//         offset: 2,
+//         ticketsLimit: 600,
+//         ticketsIssued: 432,
+//         timestamp: 1661011200,
+//         locationType: "TXT",
+//         location: "Brotfabrik Berlin",
+//         title: "Tea Drinking Meetup",
+//         website: "https://www.google.com",
+//         artwork: "https://myhaneerbil.com/wp-content/uploads/960x0.jpg"
+//     },
+```
+
+Sign messages
+
+```typescript
+const message = "The quick brown fox jumps over the lazy dog";
+const messageBytes = decodeUTF8(message);
+
+const signature = nacl.sign.detached(messageBytes, keypair.secretKey);
+const result = nacl.sign.detached.verify(
+        messageBytes,
+        signature,
+        keypair.publicKey.toBytes()
+);
+
+console.log(result);
+
 ```
 
 Links
