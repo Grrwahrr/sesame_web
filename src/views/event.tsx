@@ -11,15 +11,13 @@ export const EventView: FC = () => {
     const {publicKey} = useWallet();
     const anchorWallet = useAnchorWallet();
 
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [view, setView] = useState<String>("events");
-    const [organizer, setOrganizer] = useState<any>(undefined);
+    const [view, setView] = useState<String>("loading");
+    const [organizer, setOrganizer] = useState<any>({offset: -1, title: "", website: ""});
     const [events, setEvents] = useState<Array<any>>([]);
 
-    const [editorOrganizer, setEditorOrganizer] = useState<any>(undefined);
     const [editorEvent, setEditorEvent] = useState<any>(undefined);
+    const [editorPass, setEditorPass] = useState<any>(undefined);
 
-    const emptyOrganizer = {title: "", website: ""};
     const emptyEvent = {
         offset: -1,
         ticketsLimit: "",
@@ -34,6 +32,9 @@ export const EventView: FC = () => {
         ticketAuthorityDelete: "",
         ticketAuthorityCheckIn: "",
     };
+    const emptyPass = {
+        offset: -1,
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -46,11 +47,11 @@ export const EventView: FC = () => {
             // Try to load organizer account
             let eventOffset = 0;
             try {
-                const organizer = await program.account.organizer.fetch(accDataOrganizer);
-                eventOffset = organizer.counterEvents;
-                setOrganizer(organizer);
+                const chainOrganizer = await program.account.organizer.fetch(accDataOrganizer);
+                eventOffset = chainOrganizer.counterEvents;
+                setOrganizer({offset: 1, ...chainOrganizer});
             } catch (e) {
-                setIsLoading(false);
+                setView("init");
                 return;
             }
 
@@ -65,7 +66,7 @@ export const EventView: FC = () => {
                 }
             }
 
-            setIsLoading(false);
+            setView("events");
         }
         fetchData().catch(console.error);
     }, [connection, publicKey, anchorWallet]);
@@ -74,20 +75,20 @@ export const EventView: FC = () => {
         console.log("Running Save Organizer");
         const program = ticketProgram(connection, anchorWallet);
         const [accDataOrganizer, bumpOrganizer] = await deriveOrganizer(program, publicKey);
-        let organizer = undefined;
+        let chainOrganizer = undefined;
         try {
-            organizer = await program.account.organizer.fetch(accDataOrganizer);
+            chainOrganizer = await program.account.organizer.fetch(accDataOrganizer);
         } catch (error: any) {
         }
 
 
-        if (editorOrganizer === undefined) {
-            console.log("only save with modal open");
+        if (chainOrganizer === undefined) {
+            console.log("Organizer does not exist on chain");
             return;
         }
 
-        if (organizer) {
-            if (organizer.title == editorOrganizer.title && organizer.website == editorOrganizer.website) {
+        if (chainOrganizer) {
+            if (chainOrganizer.title == organizer.title && chainOrganizer.website == organizer.website) {
                 notifyTxError("No changes were made", "", "");
                 return;
             }
@@ -95,13 +96,12 @@ export const EventView: FC = () => {
             let tx: TransactionSignature = '';
             try {
                 tx = await program.methods
-                    .updateOrganizer(editorOrganizer.title, editorOrganizer.website)
+                    .updateOrganizer(organizer.title, organizer.website)
                     .accounts({
                         authority: publicKey,
                         organizer: accDataOrganizer,
                     }).rpc();
                 notifyTxSuccess("Organizer was updated", tx);
-                setOrganizer(editorOrganizer);
             } catch (error: any) {
                 notifyTxError("Could not update organizer", error, tx);
             }
@@ -109,18 +109,19 @@ export const EventView: FC = () => {
             let tx: TransactionSignature = '';
             try {
                 tx = await program.methods
-                    .createOrganizer(editorOrganizer.title, editorOrganizer.website)
+                    .createOrganizer(organizer.title, organizer.website)
                     .accounts({
                         payer: publicKey,
                         organizer: accDataOrganizer,
                     }).rpc();
                 notifyTxSuccess("Organizer was created", tx);
-                setOrganizer(editorOrganizer);
+                setOrganizer({...organizer, offset: 1});
+                setView("events");
             } catch (error: any) {
                 notifyTxError("Could not create organizer", error, tx);
             }
         }
-    }, [publicKey, connection, editorOrganizer]);
+    }, [publicKey, connection, organizer]);
 
     const btnSaveEvent = useCallback(async () => {
         console.log("Running Save Event");
@@ -139,8 +140,8 @@ export const EventView: FC = () => {
         }
         // We will need the organizers counter to know what the next offset is
         else {
-            const organizer = await program.account.organizer.fetch(accDataOrganizer);
-            accountOffset = organizer.counterEvents;
+            const chainOrganizer = await program.account.organizer.fetch(accDataOrganizer);
+            accountOffset = chainOrganizer.counterEvents;
         }
 
         // Derive account address & load it
@@ -235,24 +236,29 @@ export const EventView: FC = () => {
 
     const createOrganizerHero = () => {
         return (
-            <div className="w-full items-center">
-                <div className="hero h-50 bg-base-300 w-full md:w-4/5 m-auto rounded-xl">
-                    <div className="hero-content text-center">
-                        <div className="max-w-md">
-                            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-tr from-[#CC6677] to-[#00AADD]">Let&apos;s
-                                get started!</h1>
-                            <p className="py-6">First of, we should configure your event organizer account. You&apos;ll
-                                need that to start creating events.</p>
-                            <button className="btn btn-primary"
-                                    onClick={() => {
-                                        setEditorOrganizer(emptyOrganizer);
-                                        setView("editOrganizer");
-                                    }}>Create Organizer
-                            </button>
+            <>
+                <div className="w-full items-center">
+                    <div className="hero h-50 bg-base-300 w-full md:w-4/5 m-auto rounded-xl">
+                        <div className="hero-content text-center">
+                            <div className="max-w-md">
+                                <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-tr from-[#CC6677] to-[#00AADD]">Let&apos;s
+                                    get started!</h1>
+                                <p className="py-6">First of, we should configure your event organizer account.
+                                    You&apos;ll
+                                    need that to start creating events.</p>
+
+                                <div className="py-4">
+                                    {showOrganizerForm()}
+                                </div>
+
+                                <button className="btn btn-primary"
+                                        onClick={btnSaveOrganizer}>Create Organizer
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </>
         );
     }
 
@@ -263,7 +269,6 @@ export const EventView: FC = () => {
                     Hello, {organizer.title}
                     <button className="mx-2 btn btn-xs btn-outline"
                             onClick={() => {
-                                setEditorOrganizer(organizer);
                                 setView("editOrganizer");
                             }}>Edit
                     </button>
@@ -273,7 +278,7 @@ export const EventView: FC = () => {
                        onClick={() => setView("events")}>Events</a>
                     <a className={"tab tab-lg tab-bordered " + (view === "passes" ? "tab-active" : "")}
                        onClick={() => setView("passes")}>Event Passes</a>
-                    {editorOrganizer !== undefined ?
+                    {view === "editOrganizer" ?
                         <a className={"tab tab-lg tab-bordered " + (view === "editOrganizer" ? "tab-active" : "")}
                            onClick={() => setView("editOrganizer")}>Organizer Editor</a> : ""}
                     {editorEvent !== undefined ?
@@ -400,31 +405,15 @@ export const EventView: FC = () => {
 
     const showOrganizerEditor = () => {
         return <>
-            <div>
-                <h3 className="font-bold text-lg">{editorOrganizer ? 'Edit' : 'Create'} Organizer Data</h3>
+            <div className="p-2 w-full md:w-4/5">
+                {/*<h3 className="font-bold text-lg">{organizer.offset<1 ? 'Create' : 'Edit'} Organizer Data</h3>*/}
                 <div className="py-4">
-                    <div className="form-control w-full">
-                        <label className="label">
-                            <span className="label-text">The name of your organization</span>
-                        </label>
-                        <input type="text" name="title" onChange={handleOrganizerChange}
-                               value={editorOrganizer.title} placeholder="The Tea Party Organizer"
-                               className="input input-bordered input-primary w-full"/>
-                    </div>
-                    <div className="form-control w-full">
-                        <label className="label">
-                            <span className="label-text">Link to your website</span>
-                        </label>
-                        <input type="text" name="website" onChange={handleOrganizerChange}
-                               value={editorOrganizer.website} placeholder="https://www.theteapartyorganizer.xyz"
-                               className="input input-bordered input-primary w-full"/>
-                    </div>
+                    {showOrganizerForm()}
                 </div>
                 <div className="modal-action">
                     <button className="btn btn-md btn-primary" onClick={btnSaveOrganizer}>Save</button>
                     <button className="btn btn-md btn-warning"
                             onClick={() => {
-                                setEditorOrganizer(undefined);
                                 setView("events")
                             }}>Close
                     </button>
@@ -432,15 +421,34 @@ export const EventView: FC = () => {
             </div>
         </>
     }
-    const handleOrganizerChange = (e) => {
-        let tmp = editorOrganizer;
-        tmp[e.target.name] = e.target.value;
-        setEditorOrganizer(tmp);
+    const showOrganizerForm = () => {
+        return <>
+            <div className="form-control w-full">
+                <label className="label">
+                    <span className="label-text">The name of your organization</span>
+                </label>
+                <input type="text" name="title" onChange={handleOrganizerChange}
+                       value={organizer.title} placeholder="The Tea Party Organizer"
+                       className="input input-bordered input-primary w-full"/>
+            </div>
+            <div className="form-control w-full">
+                <label className="label">
+                    <span className="label-text">Link to your website</span>
+                </label>
+                <input type="text" name="website" onChange={handleOrganizerChange}
+                       value={organizer.website} placeholder="https://www.theteapartyorganizer.xyz"
+                       className="input input-bordered input-primary w-full"/>
+            </div>
+        </>
     };
+    const handleOrganizerChange = useCallback((e) => {
+        const {name, value} = e.target;
+        setOrganizer({...organizer, [name]: value});
+    }, [organizer]);
 
     const showEventEditor = () => {
         return <>
-            <div>
+            <div className="p-2 w-full md:w-4/5">
                 <h3 className="font-bold text-lg">Event data</h3>
                 <div className="py-4">
                     <div className="form-control w-full">
@@ -531,16 +539,14 @@ export const EventView: FC = () => {
         </>
     }
     const handleEventChange = (e) => {
-        let tmp = editorEvent;
-        if (e.target.name === 'timestamp') {
-            const dateTime = new Date(e.target.value);
+        let {name, value} = e.target;
+        if (name === 'timestamp') {
+            const dateTime = new Date(value);
             const unixTime = (dateTime.getTime() / 1000) + (-60 * dateTime.getTimezoneOffset());
-            tmp[e.target.name] = unixTime;
-            console.log("unix time is: ", unixTime, " for: ", e.target.value);
-        } else {
-            tmp[e.target.name] = e.target.value;
+            console.log("unix time is: ", unixTime, " for: ", value);
+            value = unixTime;
         }
-        setEditorEvent(tmp);
+        setEditorEvent({...editorEvent, [name]: value});
     };
 
     const showPassEditor = () => {
@@ -552,9 +558,8 @@ export const EventView: FC = () => {
     }
 
     return <>
-        {/*TODO: FIX INITIAL CREATION OF ORGANIZER*/}
-        {isLoading ? showSpinner() : ''}
-        {!isLoading && !organizer ? createOrganizerHero() : ''}
-        {!isLoading && organizer ? showMainView() : ''}
+        {view === "loading" ? showSpinner() : ""}
+        {view !== "loading" && organizer.offset < 0 ? createOrganizerHero() : ''}
+        {view !== "loading" && organizer.offset > 0 ? showMainView() : ''}
     </>
 };
