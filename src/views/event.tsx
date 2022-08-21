@@ -12,11 +12,12 @@ export const EventView: FC = () => {
     const anchorWallet = useAnchorWallet();
 
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [view, setView] = useState<String>("events");
     const [organizer, setOrganizer] = useState<any>(undefined);
     const [events, setEvents] = useState<Array<any>>([]);
 
-    const [editorOrganizer, setEditorOrganizer] = useState<[boolean, any]>([false, undefined]);
-    const [editorEvent, setEditorEvent] = useState<[boolean, any]>([false, undefined]);
+    const [editorOrganizer, setEditorOrganizer] = useState<any>(undefined);
+    const [editorEvent, setEditorEvent] = useState<any>(undefined);
 
     const emptyOrganizer = {title: "", website: ""};
     const emptyEvent = {
@@ -80,13 +81,13 @@ export const EventView: FC = () => {
         }
 
 
-        if (!editorOrganizer[0]) {
+        if (editorOrganizer === undefined) {
             console.log("only save with modal open");
             return;
         }
 
         if (organizer) {
-            if (organizer.title == editorOrganizer[1].title && organizer.website == editorOrganizer[1].website) {
+            if (organizer.title == editorOrganizer.title && organizer.website == editorOrganizer.website) {
                 notifyTxError("No changes were made", "", "");
                 return;
             }
@@ -94,13 +95,13 @@ export const EventView: FC = () => {
             let tx: TransactionSignature = '';
             try {
                 tx = await program.methods
-                    .updateOrganizer(editorOrganizer[1].title, editorOrganizer[1].website)
+                    .updateOrganizer(editorOrganizer.title, editorOrganizer.website)
                     .accounts({
                         authority: publicKey,
                         organizer: accDataOrganizer,
                     }).rpc();
                 notifyTxSuccess("Organizer was updated", tx);
-                setOrganizer(editorOrganizer[1]);
+                setOrganizer(editorOrganizer);
             } catch (error: any) {
                 notifyTxError("Could not update organizer", error, tx);
             }
@@ -108,13 +109,13 @@ export const EventView: FC = () => {
             let tx: TransactionSignature = '';
             try {
                 tx = await program.methods
-                    .createOrganizer(editorOrganizer[1].title, editorOrganizer[1].website)
+                    .createOrganizer(editorOrganizer.title, editorOrganizer.website)
                     .accounts({
                         payer: publicKey,
                         organizer: accDataOrganizer,
                     }).rpc();
                 notifyTxSuccess("Organizer was created", tx);
-                setOrganizer(editorOrganizer[1]);
+                setOrganizer(editorOrganizer);
             } catch (error: any) {
                 notifyTxError("Could not create organizer", error, tx);
             }
@@ -123,7 +124,7 @@ export const EventView: FC = () => {
 
     const btnSaveEvent = useCallback(async () => {
         console.log("Running Save Event");
-        if (!editorEvent[0]) {
+        if (editorEvent === undefined) {
             console.log("only save with modal open");
             return;
         }
@@ -133,8 +134,8 @@ export const EventView: FC = () => {
         let accountOffset = 0;
 
         // If the offset is not negative, we are editing some event
-        if (editorEvent[1].offset >= 0) {
-            accountOffset = editorEvent[1].offset;
+        if (editorEvent.offset >= 0) {
+            accountOffset = editorEvent.offset;
         }
         // We will need the organizers counter to know what the next offset is
         else {
@@ -151,17 +152,17 @@ export const EventView: FC = () => {
         }
 
         // Time to BN
-        const unixTimeBN = new BN(editorEvent[1].timestamp)
+        const unixTimeBN = new BN(editorEvent.timestamp)
 
         // Editing an existing event
         if (event) {
             // Make sure the data was changed
-            if (event.title == editorEvent[1].title &&
-                event.website == editorEvent[1].website &&
-                event.artwork == editorEvent[1].artwork &&
-                event.ticketsLimit == editorEvent[1].ticketsLimit &&
-                event.timestamp == editorEvent[1].timestamp &&
-                event.location == editorEvent[1].location) {
+            if (event.title == editorEvent.title &&
+                event.website == editorEvent.website &&
+                event.artwork == editorEvent.artwork &&
+                event.ticketsLimit == editorEvent.ticketsLimit &&
+                event.timestamp == editorEvent.timestamp &&
+                event.location == editorEvent.location) {
 
                 notifyTxError("No changes were made", "", "");
                 return;
@@ -170,16 +171,16 @@ export const EventView: FC = () => {
             let tx: TransactionSignature = '';
             try {
                 tx = await program.methods
-                    .updateEvent(editorEvent[1].offset, editorEvent[1].title, editorEvent[1].website, editorEvent[1].ticketsLimit, unixTimeBN, editorEvent[1].locationType, editorEvent[1].location, editorEvent[1].artwork)
+                    .updateEvent(editorEvent.offset, editorEvent.title, editorEvent.website, editorEvent.ticketsLimit, unixTimeBN, editorEvent.locationType, editorEvent.location, editorEvent.artwork)
                     .accounts({
                         authority: publicKey,
                         event: accDataEvent,
-                        ticketAuthorityIssuer: editorEvent[1].ticketAuthorityIssuer,
-                        ticketAuthorityDelete: editorEvent[1].ticketAuthorityDelete,
-                        ticketAuthorityCheckIn: editorEvent[1].ticketAuthorityCheckIn,
+                        ticketAuthorityIssuer: editorEvent.ticketAuthorityIssuer,
+                        ticketAuthorityDelete: editorEvent.ticketAuthorityDelete,
+                        ticketAuthorityCheckIn: editorEvent.ticketAuthorityCheckIn,
                     }).rpc();
                 notifyTxSuccess("Event was updated", tx);
-                await upsertEvent({offset: accountOffset, ...editorEvent[1]}, false);
+                await upsertEvent({offset: accountOffset, ...editorEvent}, false);
             } catch (error: any) {
                 notifyTxError("Could not update event", error, tx);
             }
@@ -187,19 +188,19 @@ export const EventView: FC = () => {
             let tx: TransactionSignature = '';
             try {
                 tx = await program.methods
-                    .createEvent(editorEvent[1].title, editorEvent[1].website, editorEvent[1].ticketsLimit, unixTimeBN, editorEvent[1].locationType, editorEvent[1].location, editorEvent[1].artwork)
+                    .createEvent(editorEvent.title, editorEvent.website, editorEvent.ticketsLimit, unixTimeBN, editorEvent.locationType, editorEvent.location, editorEvent.artwork)
                     .accounts({
                         payer: publicKey,
                         donateTo: publicKey,//TODO: donate to me
                         organizer: accDataOrganizer,
-                        ticketAuthorityIssuer: editorEvent[1].ticketAuthorityIssuer,
-                        ticketAuthorityDelete: editorEvent[1].ticketAuthorityDelete,
-                        ticketAuthorityCheckIn: editorEvent[1].ticketAuthorityCheckIn,
+                        ticketAuthorityIssuer: editorEvent.ticketAuthorityIssuer,
+                        ticketAuthorityDelete: editorEvent.ticketAuthorityDelete,
+                        ticketAuthorityCheckIn: editorEvent.ticketAuthorityCheckIn,
                         event: accDataEvent,
                     }).rpc();
                 notifyTxSuccess("Event was created", tx);
-                editorEvent[1].offset = accountOffset;
-                await upsertEvent(editorEvent[1], false);
+                editorEvent.offset = accountOffset;
+                await upsertEvent(editorEvent, false);
             } catch (error: any) {
                 notifyTxError("Could not create event", error, tx);
             }
@@ -243,7 +244,10 @@ export const EventView: FC = () => {
                             <p className="py-6">First of, we should configure your event organizer account. You&apos;ll
                                 need that to start creating events.</p>
                             <button className="btn btn-primary"
-                                    onClick={() => setEditorOrganizer([true, emptyOrganizer])}>Create Organizer
+                                    onClick={() => {
+                                        setEditorOrganizer(emptyOrganizer);
+                                        setView("editOrganizer");
+                                    }}>Create Organizer
                             </button>
                         </div>
                     </div>
@@ -252,36 +256,36 @@ export const EventView: FC = () => {
         );
     }
 
-    const createEventHero = () => {
-        return (
-            <div className="w-full items-center">
-                <div className="hero h-50 bg-base-300 w-full md:w-4/5 m-auto rounded-xl">
-                    <div className="hero-content text-center">
-                        <div className="max-w-md">
-                            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-tr from-[#CC6677] to-[#00AADD]">Create
-                                your first Event</h1>
-                            <p className="py-6">Great! Now that that&apos;s out of the way, you can create your first
-                                event.</p>
-                            <button className="btn btn-primary"
-                                    onClick={() => setEditorEvent([true, emptyEvent])}>Create an Event
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    const showOrganizer = () => {
+    const showMainView = () => {
         return (
             <>
                 <div className="py-4">
                     Hello, {organizer.title}
                     <button className="mx-2 btn btn-xs btn-outline"
-                            onClick={() => setEditorOrganizer([true, organizer])}>Edit
+                            onClick={() => {
+                                setEditorOrganizer(organizer);
+                                setView("editOrganizer");
+                            }}>Edit
                     </button>
                 </div>
-                {events.length > 0 ? showEventList() : createEventHero()}
+                <div className="tabs w-full">
+                    <a className={"tab tab-lg tab-bordered " + (view === "events" ? "tab-active" : "")}
+                       onClick={() => setView("events")}>Events</a>
+                    <a className={"tab tab-lg tab-bordered " + (view === "passes" ? "tab-active" : "")}
+                       onClick={() => setView("passes")}>Event Passes</a>
+                    {editorOrganizer !== undefined ?
+                        <a className={"tab tab-lg tab-bordered " + (view === "editOrganizer" ? "tab-active" : "")}
+                           onClick={() => setView("editOrganizer")}>Organizer Editor</a> : ""}
+                    {editorEvent !== undefined ?
+                        <a className={"tab tab-lg tab-bordered " + (view === "editEvent" ? "tab-active" : "")}
+                           onClick={() => setView("editEvent")}>Event Editor</a> : ""}
+                    {/*{editorEventPass[0] ? <a className={"tab tab-lg tab-bordered " + (view==="editEventPass" ? "tab-active" : "")} onClick={() => setView("editEventPass")}>Event Pass Editor</a> : ""}*/}
+                </div>
+                {view === "events" ? showEventList() : ""}
+                {view === "passes" ? showEventPassList() : ""}
+                {view === "editOrganizer" ? showOrganizerEditor() : ""}
+                {view === "editEvent" ? showEventEditor() : ""}
+                {view === "editPass" ? showPassEditor() : ""}
             </>
         );
     }
@@ -318,7 +322,10 @@ export const EventView: FC = () => {
                                     {showEventTickets(event.ticketsIssued, event.ticketsLimit)}
                                     <div className="h-full items-end card-actions justify-end">
                                         <button className="btn btn-sm btn-secondary"
-                                                onClick={() => setEditorEvent([true, event])}>Edit
+                                                onClick={() => {
+                                                    setEditorEvent(event)
+                                                    setView("editEvent")
+                                                }}>Edit
                                         </button>
                                         <Link href={event.website}><a target="_blank"
                                                                       className="btn btn-sm btn-outline">Website</a></Link>
@@ -330,7 +337,10 @@ export const EventView: FC = () => {
                                     <div className="h-full items-end card-actions justify-end">
                                         <button
                                             className="btn btn-sm animate-pulse bg-gradient-to-r from-[#CC6677] to-[#00AADD] hover:from-pink-500 hover:to-yellow-500 ..."
-                                            onClick={() => setEditorEvent([true, emptyEvent])}>Create new event
+                                            onClick={() => {
+                                                setEditorEvent(emptyEvent)
+                                                setView("editEvent")
+                                            }}>Create new event
                                         </button>
                                     </div>
                                 </>
@@ -368,21 +378,37 @@ export const EventView: FC = () => {
         </>
     }
 
+    const showEventPassList = () => {
+        return (
+            <>
+                TODO :)
+                {/*<div className="flex flex-row flex-wrap">*/}
+                {/*    {showEventCard({*/}
+                {/*        offset: -1,*/}
+                {/*        title: "Create an Event",*/}
+                {/*        artwork: "https://fs-prod-cdn.nintendo-europe.com/media/images/10_share_images/games_15/wii_24/SI_Wii_EACreate_image1600w.jpg"*/}
+                {/*    })}*/}
+                {/*    {events.map(event => showEventCard(event))}*/}
+                {/*</div>*/}
+            </>
+        );
+    }
+
     const showSpinner = () => {
         return <button className="btn loading">loading</button>
     }
 
-    const renderOrganizerModal = () => {
-        return <div className="modal modal-open" id="modOrganizer">
-            <div className="modal-box">
-                <h3 className="font-bold text-lg">{editorOrganizer[1] ? 'Edit' : 'Create'} Organizer Data</h3>
+    const showOrganizerEditor = () => {
+        return <>
+            <div>
+                <h3 className="font-bold text-lg">{editorOrganizer ? 'Edit' : 'Create'} Organizer Data</h3>
                 <div className="py-4">
                     <div className="form-control w-full">
                         <label className="label">
                             <span className="label-text">The name of your organization</span>
                         </label>
                         <input type="text" name="title" onChange={handleOrganizerChange}
-                               value={editorOrganizer[1].title} placeholder="The Tea Party Organizer"
+                               value={editorOrganizer.title} placeholder="The Tea Party Organizer"
                                className="input input-bordered input-primary w-full"/>
                     </div>
                     <div className="form-control w-full">
@@ -390,35 +416,38 @@ export const EventView: FC = () => {
                             <span className="label-text">Link to your website</span>
                         </label>
                         <input type="text" name="website" onChange={handleOrganizerChange}
-                               value={editorOrganizer[1].website} placeholder="https://www.theteapartyorganizer.xyz"
+                               value={editorOrganizer.website} placeholder="https://www.theteapartyorganizer.xyz"
                                className="input input-bordered input-primary w-full"/>
                     </div>
                 </div>
                 <div className="modal-action">
                     <button className="btn btn-md btn-primary" onClick={btnSaveOrganizer}>Save</button>
                     <button className="btn btn-md btn-warning"
-                            onClick={() => setEditorOrganizer([false, emptyOrganizer])}>Close
+                            onClick={() => {
+                                setEditorOrganizer(undefined);
+                                setView("events")
+                            }}>Close
                     </button>
                 </div>
             </div>
-        </div>
+        </>
     }
     const handleOrganizerChange = (e) => {
-        let tmp = editorOrganizer[1];
+        let tmp = editorOrganizer;
         tmp[e.target.name] = e.target.value;
-        setEditorOrganizer([true, tmp]);
+        setEditorOrganizer(tmp);
     };
 
-    const renderEventModal = () => {
-        return <div className="modal modal-open" id="modEvent">
-            <div className="modal-box">
+    const showEventEditor = () => {
+        return <>
+            <div>
                 <h3 className="font-bold text-lg">Event data</h3>
                 <div className="py-4">
                     <div className="form-control w-full">
                         <label className="label">
                             <span className="label-text">The name of your event</span>
                         </label>
-                        <input type="text" name="title" onChange={handleEventChange} value={editorEvent[1].title}
+                        <input type="text" name="title" onChange={handleEventChange} value={editorEvent.title}
                                placeholder="The Tea Party Meetup"
                                className="input input-bordered input-primary w-full"/>
                     </div>
@@ -426,7 +455,7 @@ export const EventView: FC = () => {
                         <label className="label">
                             <span className="label-text">Link to event website</span>
                         </label>
-                        <input type="text" name="website" onChange={handleEventChange} value={editorEvent[1].website}
+                        <input type="text" name="website" onChange={handleEventChange} value={editorEvent.website}
                                placeholder="https://www.theteapartyorganizer.xyz"
                                className="input input-bordered input-primary w-full"/>
                     </div>
@@ -435,7 +464,7 @@ export const EventView: FC = () => {
                             <span className="label-text">Date & Time</span>
                         </label>
                         <input type="datetime-local" name="timestamp" onChange={handleEventChange}
-                               value={new Date(editorEvent[1].timestamp * 1000).toISOString().substring(0, 16)}
+                               value={new Date(editorEvent.timestamp * 1000).toISOString().substring(0, 16)}
                                className="input input-bordered input-primary w-full"/>
                     </div>
                     <div className="form-control w-full">
@@ -443,14 +472,14 @@ export const EventView: FC = () => {
                             <span className="label-text">Location</span>
                         </label>
                         <input type="text" name="location" onChange={handleEventChange}
-                               value={editorEvent[1].location} placeholder="Earth, Milkyway, Universe"
+                               value={editorEvent.location} placeholder="Earth, Milkyway, Universe"
                                className="input input-bordered input-primary w-full"/>
                     </div>
                     <div className="form-control w-full">
                         <label className="label">
                             <span className="label-text">Artwork</span>
                         </label>
-                        <input type="text" name="artwork" onChange={handleEventChange} value={editorEvent[1].artwork}
+                        <input type="text" name="artwork" onChange={handleEventChange} value={editorEvent.artwork}
                                placeholder="https://www.theteapartyorganizer.xyz/event.png"
                                className="input input-bordered input-primary w-full"/>
                     </div>
@@ -459,7 +488,7 @@ export const EventView: FC = () => {
                             <span className="label-text">Maximum number of tickets</span>
                         </label>
                         <input type="text" name="ticketsLimit" onChange={handleEventChange}
-                               value={editorEvent[1].ticketsLimit} placeholder="100"
+                               value={editorEvent.ticketsLimit} placeholder="100"
                                className="input input-bordered input-primary w-full"/>
                     </div>
                     <div className="form-control w-full">
@@ -467,7 +496,7 @@ export const EventView: FC = () => {
                             <span className="label-text">Ticket issuance authority</span>
                         </label>
                         <input type="text" name="ticketAuthorityIssuer" onChange={handleEventChange}
-                               value={editorEvent[1].ticketAuthorityIssuer} placeholder="Account Address"
+                               value={editorEvent.ticketAuthorityIssuer} placeholder="Account Address"
                                className="input input-bordered input-primary w-full"/>
                     </div>
                     <div className="form-control w-full">
@@ -475,7 +504,7 @@ export const EventView: FC = () => {
                             <span className="label-text">Ticket delete authority</span>
                         </label>
                         <input type="text" name="ticketAuthorityDelete" onChange={handleEventChange}
-                               value={editorEvent[1].ticketAuthorityDelete} placeholder="Account Address"
+                               value={editorEvent.ticketAuthorityDelete} placeholder="Account Address"
                                className="input input-bordered input-primary w-full"/>
                     </div>
                     <div className="form-control w-full">
@@ -483,7 +512,7 @@ export const EventView: FC = () => {
                             <span className="label-text">Ticket check in authority</span>
                         </label>
                         <input type="text" name="ticketAuthorityCheckIn" onChange={handleEventChange}
-                               value={editorEvent[1].ticketAuthorityCheckIn} placeholder="Account Address"
+                               value={editorEvent.ticketAuthorityCheckIn} placeholder="Account Address"
                                className="input input-bordered input-primary w-full"/>
                     </div>
                 </div>
@@ -492,14 +521,17 @@ export const EventView: FC = () => {
                 <div className="modal-action">
                     <button className="btn btn-md btn-primary" onClick={btnSaveEvent}>Save</button>
                     <button className="btn btn-md btn-warning"
-                            onClick={() => setEditorEvent([false, emptyEvent])}>Close
+                            onClick={() => {
+                                setEditorEvent(undefined)
+                                setView("events")
+                            }}>Close
                     </button>
                 </div>
             </div>
-        </div>
+        </>
     }
     const handleEventChange = (e) => {
-        let tmp = editorEvent[1];
+        let tmp = editorEvent;
         if (e.target.name === 'timestamp') {
             const dateTime = new Date(e.target.value);
             const unixTime = (dateTime.getTime() / 1000) + (-60 * dateTime.getTimezoneOffset());
@@ -508,12 +540,21 @@ export const EventView: FC = () => {
         } else {
             tmp[e.target.name] = e.target.value;
         }
-        setEditorEvent([true, tmp]);
+        setEditorEvent(tmp);
     };
 
+    const showPassEditor = () => {
+        return <>
+            <div>
+                TODO show event passes
+            </div>
+        </>
+    }
+
     return <>
-        {isLoading ? showSpinner() : (organizer ? showOrganizer() : createOrganizerHero())}
-        {editorOrganizer[0] ? renderOrganizerModal() : ''}
-        {editorEvent[0] ? renderEventModal() : ''}
+        {/*TODO: FIX INITIAL CREATION OF ORGANIZER*/}
+        {isLoading ? showSpinner() : ''}
+        {!isLoading && !organizer ? createOrganizerHero() : ''}
+        {!isLoading && organizer ? showMainView() : ''}
     </>
 };
