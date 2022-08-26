@@ -1,7 +1,14 @@
 import {FC, useCallback, useEffect, useState} from 'react';
 import {useAnchorWallet, useConnection, useWallet} from '@solana/wallet-adapter-react';
 import {TransactionSignature} from "@solana/web3.js";
-import {deriveEvent, deriveOrganizer, notifyTxError, notifyTxSuccess, ticketProgram} from "../utils/dapp_lib";
+import {
+    deriveEvent,
+    deriveEventPass,
+    deriveOrganizer,
+    notifyTxError,
+    notifyTxSuccess,
+    ticketProgram
+} from "../utils/dapp_lib";
 import Link from "next/link";
 import {BN} from "@project-serum/anchor";
 
@@ -14,6 +21,7 @@ export const EventView: FC = () => {
     const [view, setView] = useState<String>("loading");
     const [organizer, setOrganizer] = useState<any>({offset: -1, title: "", website: ""});
     const [events, setEvents] = useState<Array<any>>([]);
+    const [passes, setPasses] = useState<Array<any>>([]);
 
     const [editorEvent, setEditorEvent] = useState<any>(undefined);
     const [editorPass, setEditorPass] = useState<any>(undefined);
@@ -34,6 +42,13 @@ export const EventView: FC = () => {
     };
     const emptyPass = {
         offset: -1,
+        passAuthorityIssuer: "",
+        passAuthorityDelete: "",
+        limitTickets: "",
+        limitHolders: "",
+        title: "",
+        website: "",
+        artwork: "",
     };
 
     useEffect(() => {
@@ -45,10 +60,12 @@ export const EventView: FC = () => {
             const [accDataOrganizer, bumpOrganizer] = await deriveOrganizer(program, publicKey);
 
             // Try to load organizer account
-            let eventOffset = 0;
+            let offsetEvent = 0;
+            let offsetPass = 0;
             try {
                 const chainOrganizer = await program.account.organizer.fetch(accDataOrganizer);
-                eventOffset = chainOrganizer.counterEvents;
+                offsetEvent = chainOrganizer.counterEvents;
+                offsetPass = chainOrganizer.counterPasses;
                 setOrganizer({offset: 1, ...chainOrganizer});
             } catch (e) {
                 setView("init");
@@ -56,12 +73,23 @@ export const EventView: FC = () => {
             }
 
             // Attempt to load all events
-            for (let i = eventOffset - 1; i >= 0; i--) {
+            for (let i = offsetEvent - 1; i >= 0; i--) {
                 const [accDataEvent, bumpEvent] = await deriveEvent(program, publicKey, i);
 
                 try {
                     const event = await program.account.event.fetch(accDataEvent);
                     await upsertEvent({offset: i, ...event}, true)
+                } catch (e) {
+                }
+            }
+
+            // Attempt to load all passes
+            for (let i = offsetPass - 1; i >= 0; i--) {
+                const [accDataPass, bumpEvent] = await deriveEventPass(program, publicKey, i);
+
+                try {
+                    const eventPass = await program.account.eventPass.fetch(accDataPass);
+                    await upsertPass({offset: i, ...eventPass}, true)
                 } catch (e) {
                 }
             }
@@ -82,8 +110,8 @@ export const EventView: FC = () => {
         }
 
 
-        if (chainOrganizer === undefined) {
-            console.log("Organizer does not exist on chain");
+        if (organizer === undefined) {
+            console.log("Organizer has no data");
             return;
         }
 
@@ -126,7 +154,7 @@ export const EventView: FC = () => {
     const btnSaveEvent = useCallback(async () => {
         console.log("Running Save Event");
         if (editorEvent === undefined) {
-            console.log("only save with modal open");
+            console.log("Event has no data");
             return;
         }
 
@@ -163,7 +191,10 @@ export const EventView: FC = () => {
                 event.artwork == editorEvent.artwork &&
                 event.ticketsLimit == editorEvent.ticketsLimit &&
                 event.timestamp == editorEvent.timestamp &&
-                event.location == editorEvent.location) {
+                event.location == editorEvent.location &&
+                event.ticketAuthorityIssuer == editorEvent.ticketAuthorityIssuer &&
+                event.ticketAuthorityDelete == editorEvent.ticketAuthorityDelete &&
+                event.ticketAuthorityCheckIn == editorEvent.ticketAuthorityCheckIn) {
 
                 notifyTxError("No changes were made", "", "");
                 return;
@@ -208,31 +239,121 @@ export const EventView: FC = () => {
         }
     }, [publicKey, connection, editorEvent]);
 
+    const btnSavePass = useCallback(async () => {
+        console.log("Running Save Pass");
+        if (editorPass === undefined) {
+            console.log("Pass has no data");
+            return;
+        }
+
+        const program = ticketProgram(connection, anchorWallet);
+        const [accDataOrganizer, bumpOrganizer] = await deriveOrganizer(program, publicKey);
+        let accountOffset = 0;
+
+        // If the offset is not negative, we are editing some pass
+        if (editorPass.offset >= 0) {
+            accountOffset = editorPass.offset;
+        }
+        // We will need the organizers counter to know what the next offset is
+        else {
+            const chainOrganizer = await program.account.organizer.fetch(accDataOrganizer);
+            accountOffset = chainOrganizer.counterPasses;
+        }
+
+        // Derive account address & load it
+        const [accDataPass, bumpPass] = await deriveEventPass(program, publicKey, accountOffset);
+        let pass = undefined;
+        try {
+            pass = await program.account.eventPass.fetch(accDataPass);
+        } catch (error: any) {
+        }
+
+        // Editing an existing pass
+        if (pass) {
+            // Make sure the data was changed
+            if (pass.title == editorPass.title &&
+                pass.website == editorPass.website &&
+                pass.artwork == editorPass.artwork &&
+                pass.limitTickets == editorPass.limitTickets &&
+                pass.limitHolders == editorPass.limitHolders &&
+                pass.passAuthorityIssuer == editorPass.passAuthorityIssuer &&
+                pass.passAuthorityDelete == editorPass.passAuthorityDelete) {
+
+                notifyTxError("No changes were made", "", "");
+                return;
+            }
+
+            let tx: TransactionSignature = '';//TODO do not have an update pass function
+            // try {
+            //     tx = await program.methods
+            //         .updatePass(editorPass.offset, editorPass.title, editorPass.website, editorPass.artwork, editorPass.limitTickets, editorPass.limitHolders)
+            //         .accounts({
+            //             authority: publicKey,
+            //             pass: accDataPass,
+            //             ticketAuthorityIssuer: editorPass.ticketAuthorityIssuer,
+            //             ticketAuthorityDelete: editorPass.ticketAuthorityDelete,
+            //             ticketAuthorityCheckIn: editorPass.ticketAuthorityCheckIn,
+            //         }).rpc();
+            //     notifyTxSuccess("Pass was updated", tx);
+            //     await upsertPass({offset: accountOffset, ...editorPass}, false);
+            // } catch (error: any) {
+            //     notifyTxError("Could not update pass", error, tx);
+            // }
+        } else { // Creating a new pass
+            let tx: TransactionSignature = '';
+            try {
+                tx = await program.methods
+                    .createEventPass(editorPass.title, editorPass.website, editorPass.artwork, editorPass.limitTickets, editorPass.limitHolders)
+                    .accounts({
+                        payer: publicKey,
+                        organizer: accDataOrganizer,
+                        passAuthorityIssuer: editorPass.passAuthorityIssuer,
+                        passAuthorityDelete: editorPass.passAuthorityDelete,
+                        eventPass: accDataPass
+                    }).rpc();
+                notifyTxSuccess("Pass was created", tx);
+                editorPass.offset = accountOffset;
+                await upsertPass(editorPass, false);
+            } catch (error: any) {
+                notifyTxError("Could not create pass", error, tx);
+            }
+        }
+    }, [publicKey, connection, editorPass]);
+
     const upsertEvent = useCallback(async (newEventData, append: boolean) => {
         let tmp = events;
-        console.log("given newEventData", newEventData);
+        console.log("UPSERT given event", newEventData);
 
+        tmp = upsert(tmp, newEventData, append);
+        setEvents(tmp);
+    }, [events]);
+
+    const upsertPass = useCallback(async (newPassData, append: boolean) => {
+        let tmp = passes;
+        console.log("UPSERT given pass: ", newPassData);
+
+        tmp = upsert(tmp, newPassData, append);
+        setPasses(tmp);
+    }, [passes]);
+
+    const upsert = (data, item, append: boolean) => {
         // Attempt to update data
-        let updated = false;
-        for (let idx = 0; idx < tmp.length; idx++) {
-            if (tmp[idx].offset === newEventData.offset) {
-                tmp[idx] = newEventData;
-                updated = true;
+        for (let idx = 0; idx < data.length; idx++) {
+            if (data[idx].offset === item.offset) {
+                data[idx] = item;
+                return data;
             }
         }
 
         // Prepend
-        if (!updated) {
-            if (append) {
-                tmp.push(newEventData);
-            } else {
-                tmp.unshift(newEventData);
-            }
+        if (append) {
+            data.push(item);
+        } else {
+            data.unshift(item);
         }
 
-        setEvents(tmp);
-    }, [events]);
-
+        return data;
+    }
 
     const createOrganizerHero = () => {
         return (
@@ -284,7 +405,9 @@ export const EventView: FC = () => {
                     {editorEvent !== undefined ?
                         <a className={"tab tab-lg tab-bordered " + (view === "editEvent" ? "tab-active" : "")}
                            onClick={() => setView("editEvent")}>Event Editor</a> : ""}
-                    {/*{editorEventPass[0] ? <a className={"tab tab-lg tab-bordered " + (view==="editEventPass" ? "tab-active" : "")} onClick={() => setView("editEventPass")}>Event Pass Editor</a> : ""}*/}
+                    {editorPass !== undefined ?
+                        <a className={"tab tab-lg tab-bordered " + (view === "editPass" ? "tab-active" : "")}
+                           onClick={() => setView("editPass")}>Event Pass Editor</a> : ""}
                 </div>
                 {view === "events" ? showEventList() : ""}
                 {view === "passes" ? showEventPassList() : ""}
@@ -386,16 +509,58 @@ export const EventView: FC = () => {
     const showEventPassList = () => {
         return (
             <>
-                TODO :)
-                {/*<div className="flex flex-row flex-wrap">*/}
-                {/*    {showEventCard({*/}
-                {/*        offset: -1,*/}
-                {/*        title: "Create an Event",*/}
-                {/*        artwork: "https://fs-prod-cdn.nintendo-europe.com/media/images/10_share_images/games_15/wii_24/SI_Wii_EACreate_image1600w.jpg"*/}
-                {/*    })}*/}
-                {/*    {events.map(event => showEventCard(event))}*/}
-                {/*</div>*/}
+                <div className="flex flex-row flex-wrap">
+                    {showPassCard({
+                        offset: -1,
+                        title: "Create an Event Pass",
+                        artwork: "https://fs-prod-cdn.nintendo-europe.com/media/images/10_share_images/games_15/wii_24/SI_Wii_EACreate_image1600w.jpg"
+                    })}
+                    {passes.map(pass => showPassCard(pass))}
+                </div>
             </>
+        );
+    }
+    const showPassCard = (pass) => {
+        return (
+            <div className="p-5 w-full basis-1/1 md:basis-1/2 lg:basis-1/4" key={pass.offset}>
+                <div className="h-full card bg-neutral bg-base-300">
+                    <figure><img src={pass.artwork} alt="Image"/></figure>
+                    <div className="card-body">
+                        <h2 className="card-title">
+                            {pass.title}
+                            {/*<div className="mx-2 badge badge-secondary">NEW</div>*/}
+                        </h2>
+                        {
+                            pass.offset >= 0 ?
+                                <>
+                                    <div className="h-full items-end card-actions justify-end">
+                                        <button className="btn btn-sm btn-secondary"
+                                                onClick={() => {
+                                                    setEditorPass(pass)
+                                                    setView("editPass")
+                                                }}>Edit
+                                        </button>
+                                        <Link href={pass.website}><a target="_blank"
+                                                                     className="btn btn-sm btn-outline">Website</a></Link>
+                                    </div>
+                                </>
+                                :
+                                <>
+                                    <p className="py-5">Create a new Event Pass?</p>
+                                    <div className="h-full items-end card-actions justify-end">
+                                        <button
+                                            className="btn btn-sm animate-pulse bg-gradient-to-r from-[#CC6677] to-[#00AADD] hover:from-pink-500 hover:to-yellow-500 ..."
+                                            onClick={() => {
+                                                setEditorPass(emptyPass)
+                                                setView("editPass")
+                                            }}>Create new event pass
+                                        </button>
+                                    </div>
+                                </>
+                        }
+                    </div>
+                </div>
+            </div>
         );
     }
 
@@ -428,7 +593,7 @@ export const EventView: FC = () => {
                     <span className="label-text">The name of your organization</span>
                 </label>
                 <input type="text" name="title" onChange={handleOrganizerChange}
-                       value={organizer.title} placeholder="The Tea Party Organizer"
+                       value={organizer.title} placeholder="Film Festival Organizer"
                        className="input input-bordered input-primary w-full"/>
             </div>
             <div className="form-control w-full">
@@ -436,7 +601,7 @@ export const EventView: FC = () => {
                     <span className="label-text">Link to your website</span>
                 </label>
                 <input type="text" name="website" onChange={handleOrganizerChange}
-                       value={organizer.website} placeholder="https://www.theteapartyorganizer.xyz"
+                       value={organizer.website} placeholder="https://www.thefilmfestival.xyz"
                        className="input input-bordered input-primary w-full"/>
             </div>
         </>
@@ -449,14 +614,13 @@ export const EventView: FC = () => {
     const showEventEditor = () => {
         return <>
             <div className="p-2 w-full md:w-4/5">
-                <h3 className="font-bold text-lg">Event data</h3>
                 <div className="py-4">
                     <div className="form-control w-full">
                         <label className="label">
                             <span className="label-text">The name of your event</span>
                         </label>
                         <input type="text" name="title" onChange={handleEventChange} value={editorEvent.title}
-                               placeholder="The Tea Party Meetup"
+                               placeholder="The Film Festival"
                                className="input input-bordered input-primary w-full"/>
                     </div>
                     <div className="form-control w-full">
@@ -464,7 +628,7 @@ export const EventView: FC = () => {
                             <span className="label-text">Link to event website</span>
                         </label>
                         <input type="text" name="website" onChange={handleEventChange} value={editorEvent.website}
-                               placeholder="https://www.theteapartyorganizer.xyz"
+                               placeholder="https://www.thefilmfestival.xyz"
                                className="input input-bordered input-primary w-full"/>
                     </div>
                     <div className="form-control w-full">
@@ -480,7 +644,7 @@ export const EventView: FC = () => {
                             <span className="label-text">Location</span>
                         </label>
                         <input type="text" name="location" onChange={handleEventChange}
-                               value={editorEvent.location} placeholder="Earth, Milkyway, Universe"
+                               value={editorEvent.location} placeholder="Earth, Milky Way, Universe"
                                className="input input-bordered input-primary w-full"/>
                     </div>
                     <div className="form-control w-full">
@@ -488,14 +652,14 @@ export const EventView: FC = () => {
                             <span className="label-text">Artwork</span>
                         </label>
                         <input type="text" name="artwork" onChange={handleEventChange} value={editorEvent.artwork}
-                               placeholder="https://www.theteapartyorganizer.xyz/event.png"
+                               placeholder="https://www.thefilmfestival.xyz/event.png"
                                className="input input-bordered input-primary w-full"/>
                     </div>
                     <div className="form-control w-full">
                         <label className="label">
                             <span className="label-text">Maximum number of tickets</span>
                         </label>
-                        <input type="text" name="ticketsLimit" onChange={handleEventChange}
+                        <input type="number" name="ticketsLimit" onChange={handleEventChange}
                                value={editorEvent.ticketsLimit} placeholder="100"
                                className="input input-bordered input-primary w-full"/>
                     </div>
@@ -524,8 +688,6 @@ export const EventView: FC = () => {
                                className="input input-bordered input-primary w-full"/>
                     </div>
                 </div>
-                {/* TODO: need a function to delete an individual ticket - requires seat_id - clarify this won't refund */}
-                {/* TODO: need a function to delete all ticket accounts & the event itself - "Delete Event" DANGER ZONE */}
                 <div className="modal-action">
                     <button className="btn btn-md btn-primary" onClick={btnSaveEvent}>Save</button>
                     <button className="btn btn-md btn-warning"
@@ -551,11 +713,81 @@ export const EventView: FC = () => {
 
     const showPassEditor = () => {
         return <>
-            <div>
-                TODO show event passes
+            <div className="p-2 w-full md:w-4/5">
+                <div className="py-4">
+                    <div className="form-control w-full">
+                        <label className="label">
+                            <span className="label-text">The name of your event pass</span>
+                        </label>
+                        <input type="text" name="title" onChange={handlePassChange} value={editorPass.title}
+                               placeholder="Film Festival Event Pass"
+                               className="input input-bordered input-primary w-full"/>
+                    </div>
+                    <div className="form-control w-full">
+                        <label className="label">
+                            <span className="label-text">Link to event pass website</span>
+                        </label>
+                        <input type="text" name="website" onChange={handlePassChange} value={editorPass.website}
+                               placeholder="https://www.thefilmfestival.xyz"
+                               className="input input-bordered input-primary w-full"/>
+                    </div>
+                    <div className="form-control w-full">
+                        <label className="label">
+                            <span className="label-text">Artwork</span>
+                        </label>
+                        <input type="text" name="artwork" onChange={handlePassChange} value={editorPass.artwork}
+                               placeholder="https://www.thefilmfestival.xyz/event.png"
+                               className="input input-bordered input-primary w-full"/>
+                    </div>
+                    <div className="form-control w-full">
+                        <label className="label">
+                            <span className="label-text">Maximum number of tickets per user</span>
+                        </label>
+                        <input type="number" name="limitTickets" onChange={handlePassChange}
+                               value={editorPass.limitTickets} placeholder="5"
+                               className="input input-bordered input-primary w-full"/>
+                    </div>
+                    <div className="form-control w-full">
+                        <label className="label">
+                            <span className="label-text">Maximum number of passes that can be created</span>
+                        </label>
+                        <input type="number" name="limitHolders" onChange={handlePassChange}
+                               value={editorPass.limitHolders} placeholder="200"
+                               className="input input-bordered input-primary w-full"/>
+                    </div>
+                    <div className="form-control w-full">
+                        <label className="label">
+                            <span className="label-text">Ticket issuance authority</span>
+                        </label>
+                        <input type="text" name="passAuthorityIssuer" onChange={handlePassChange}
+                               value={editorPass.passAuthorityIssuer} placeholder="Account Address"
+                               className="input input-bordered input-primary w-full"/>
+                    </div>
+                    <div className="form-control w-full">
+                        <label className="label">
+                            <span className="label-text">Ticket delete authority</span>
+                        </label>
+                        <input type="text" name="passAuthorityDelete" onChange={handlePassChange}
+                               value={editorPass.passAuthorityDelete} placeholder="Account Address"
+                               className="input input-bordered input-primary w-full"/>
+                    </div>
+                </div>
+                <div className="modal-action">
+                    <button className="btn btn-md btn-primary" onClick={btnSavePass}>Save</button>
+                    <button className="btn btn-md btn-warning"
+                            onClick={() => {
+                                setEditorPass(undefined)
+                                setView("passes")
+                            }}>Close
+                    </button>
+                </div>
             </div>
         </>
     }
+    const handlePassChange = (e) => {
+        let {name, value} = e.target;
+        setEditorPass({...editorPass, [name]: value});
+    };
 
     return <>
         {view === "loading" ? showSpinner() : ""}
@@ -563,3 +795,24 @@ export const EventView: FC = () => {
         {view !== "loading" && organizer.offset > 0 ? showMainView() : ''}
     </>
 };
+
+/*
+
+// TODO edit passed
+// TODO add an event to a pass
+
+TODO: need a function to delete an individual ticket - requires seat_id - clarify this won't refund
+TODO: need a function to delete all ticket accounts & the event itself - "Delete Event" DANGER ZONE
+
+//         title: "Awesome Film Festival",
+//         website: "https://www.google.com",
+//         artwork: "https://blog.walls.io/wp-content/uploads/2017/02/ideas-for-making-event-more-social.jpg"
+
+//         title: "Crazy Horse Show",
+//         website: "https://www.google.com",
+//         artwork: "https://intheory.events/wp-content/uploads/2020/11/op_livestreaming_event_stage-1-1536x864.jpg"
+
+//         title: "Tea Drinking Meetup",
+//         website: "https://www.google.com",
+//         artwork: "https://myhaneerbil.com/wp-content/uploads/960x0.jpg"
+ */

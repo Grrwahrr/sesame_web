@@ -415,12 +415,16 @@ export type Sesame = {
           "type": "string"
         },
         {
-          "name": "ticketsLimit",
+          "name": "imageUrl",
+          "type": "string"
+        },
+        {
+          "name": "limitTickets",
           "type": "u16"
         },
         {
-          "name": "imageUrl",
-          "type": "string"
+          "name": "limitHolders",
+          "type": "u16"
         }
       ]
     },
@@ -625,7 +629,7 @@ export type Sesame = {
             "type": "publicKey"
           },
           {
-            "name": "ticketsLimit",
+            "name": "limitTickets",
             "type": "u16"
           },
           {
@@ -634,6 +638,10 @@ export type Sesame = {
           },
           {
             "name": "counterHolders",
+            "type": "u16"
+          },
+          {
+            "name": "limitHolders",
             "type": "u16"
           },
           {
@@ -986,8 +994,8 @@ export type Sesame = {
     },
     {
       "code": 6004,
-      "name": "TicketLimitTooSmall",
-      "msg": "Ticket limit is less than the number of tickets already issued"
+      "name": "NoTicketsLeft",
+      "msg": "There are no more tickets left"
     },
     {
       "code": 6005,
@@ -1023,6 +1031,11 @@ export type Sesame = {
       "code": 6011,
       "name": "NoMoreTicketsLeftInEventPass",
       "msg": "This event pass can not issue any more tickets"
+    },
+    {
+      "code": 6012,
+      "name": "LimitOfEventPassHoldersReached",
+      "msg": "There are no more passes that can be issued"
     }
   ]
 };
@@ -1443,12 +1456,16 @@ export const IDL: Sesame = {
           "type": "string"
         },
         {
-          "name": "ticketsLimit",
+          "name": "imageUrl",
+          "type": "string"
+        },
+        {
+          "name": "limitTickets",
           "type": "u16"
         },
         {
-          "name": "imageUrl",
-          "type": "string"
+          "name": "limitHolders",
+          "type": "u16"
         }
       ]
     },
@@ -1653,7 +1670,7 @@ export const IDL: Sesame = {
             "type": "publicKey"
           },
           {
-            "name": "ticketsLimit",
+            "name": "limitTickets",
             "type": "u16"
           },
           {
@@ -1662,6 +1679,10 @@ export const IDL: Sesame = {
           },
           {
             "name": "counterHolders",
+            "type": "u16"
+          },
+          {
+            "name": "limitHolders",
             "type": "u16"
           },
           {
@@ -2014,8 +2035,8 @@ export const IDL: Sesame = {
     },
     {
       "code": 6004,
-      "name": "TicketLimitTooSmall",
-      "msg": "Ticket limit is less than the number of tickets already issued"
+      "name": "NoTicketsLeft",
+      "msg": "There are no more tickets left"
     },
     {
       "code": 6005,
@@ -2051,6 +2072,11 @@ export const IDL: Sesame = {
       "code": 6011,
       "name": "NoMoreTicketsLeftInEventPass",
       "msg": "This event pass can not issue any more tickets"
+    },
+    {
+      "code": 6012,
+      "name": "LimitOfEventPassHoldersReached",
+      "msg": "There are no more passes that can be issued"
     }
   ]
 };
