@@ -729,21 +729,19 @@ export const EventView: FC = () => {
 
         let qr = <p className="my-5">Enter the secret key for the ticket check in authority to generate a qr code that
             can be used to configure the ticket scanner app.</p>
-        if (secretKey) {
-            let keyPair = getKeyPairForSecretKeyBase58(secretKey);
-            console.log("KEY ", keyPair.publicKey.toBase58(), ' ', editorEvent.ticketAuthorityCheckIn.toBase58());
-            if (keyPair && keyPair.publicKey.toBase58() === editorEvent.ticketAuthorityCheckIn.toBase58()) {
-                let encoded = Buffer.from(JSON.stringify(
-                    {na: editorEvent.title, sc: secretKey, ev: editorEvent.pubKey}
-                )).toString('base64');
-                qr = <>
-                    <div className="my-5">
-                        <QRCode className="m-auto" value={encoded}/>
-                    </div>
-                    <p>Use this code to configure the ticket reader application. You will need to provide the secret key
-                        for the account that is the ticket check in authority.</p>
-                </>
-            }
+
+        let keyPair = getKeyPairForSecretKeyBase58(secretKey);
+        if (keyPair && keyPair.publicKey.toBase58() === editorEvent.ticketAuthorityCheckIn.toBase58()) {
+            let encoded = Buffer.from(JSON.stringify(
+                {na: editorEvent.title, sc: secretKey, ev: editorEvent.pubKey}
+            )).toString('base64');
+            qr = <>
+                <div className="my-5">
+                    <QRCode className="m-auto" value={encoded}/>
+                </div>
+                <p>Use this code to configure the ticket reader application. You will need to provide the secret key
+                    for the account that is the ticket check in authority.</p>
+            </>
         }
         return <>
             <hr className="my-5"/>
