@@ -6,8 +6,8 @@ const Admin: NextPage = (props) => {
     return (
         <>
             <Head>
-                <title>Sesame - Event Manager</title>
-                <meta name="description" content="Sesame Event Manager"/>
+                <title>Ticket Sensei - Manager</title>
+                <meta name="description" content="Ticket Sensei Manager"/>
             </Head>
             <EventView/>
         </>

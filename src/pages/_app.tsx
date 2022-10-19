@@ -14,7 +14,7 @@ const App: FC<AppProps> = ({Component, pageProps}) => {
     return (
         <>
             <Head>
-                <title>Sesame</title>
+                <title>Ticket Sensei</title>
             </Head>
 
             <ContextProvider>

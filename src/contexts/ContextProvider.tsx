@@ -13,6 +13,7 @@ import {
 import {FC, ReactNode, useCallback, useMemo} from 'react';
 import {AutoConnectProvider, useAutoConnect} from './AutoConnectProvider';
 import {notify} from "../utils/notifications";
+import {clusterApiUrl} from "@solana/web3.js";
 
 const WalletContextProvider: FC<{ children: ReactNode }> = ({children}) => {
     const {autoConnect} = useAutoConnect();
@@ -21,10 +22,10 @@ const WalletContextProvider: FC<{ children: ReactNode }> = ({children}) => {
 
     {/* TODO: UPDATE CLUSTER PER NETWORK SETTINGS, ADD LOCALHOST + CUSTOMNET | ADAPTER REWORK */
     }
-    // const network = WalletAdapterNetwork.Devnet;//TODO MYTODO
-    // const endpoint = useMemo(() => clusterApiUrl(network), [network]);
-    const network = "http://127.0.0.1:8899";//TODO MYTODO
-    const endpoint = useMemo(() => "http://127.0.0.1:8899", [network]);
+    const network = WalletAdapterNetwork.Devnet;//TODO MYTODO
+    const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+    // const network = "http://127.0.0.1:8899";//TODO MYTODO
+    // const endpoint = useMemo(() => "http://127.0.0.1:8899", [network]);
 
 
     // const endpoint = useMemo(() => "http://127.0.0.1:8899", [network]);

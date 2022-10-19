@@ -6,8 +6,8 @@ const Docs: NextPage = (props) => {
     return (
         <>
             <Head>
-                <title>Sesame - Documentation</title>
-                <meta name="description" content="Sesame Documentation"/>
+                <title>Ticket Sensei - Documentation</title>
+                <meta name="description" content="Ticket Sensei Documentation"/>
             </Head>
             <DocsView/>
         </>

@@ -22,7 +22,7 @@ export const AppBar: FC = props => {
                     </label>
                     <div className="p-2">
                         <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-tr from-[#CC6677] to-[#00AADD]">
-                            Sesame
+                            Ticket Sensei
                         </h1>
                     </div>
                 </div>
@@ -38,9 +38,6 @@ export const AppBar: FC = props => {
                         </Link>
                         <Link href="/admin">
                             <a className="btn btn-ghost btn-sm rounded-btn">Manage Event</a>
-                        </Link>
-                        <Link href="/nft">
-                            <a className="btn btn-ghost btn-sm rounded-btn">Mint NFT</a>
                         </Link>
                     </div>
                 </div>

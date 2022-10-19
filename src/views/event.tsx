@@ -4,13 +4,14 @@ import {TransactionSignature} from "@solana/web3.js";
 import {
     deriveEvent,
     deriveEventPass,
-    deriveOrganizer,
+    deriveOrganizer, getKeyPairForSecretKeyBase58,
     notifyTxError,
     notifyTxSuccess,
     ticketProgram
-} from "../utils/dapp_lib";
+} from "../utils/solana";
 import Link from "next/link";
 import {BN} from "@project-serum/anchor";
+import QRCode from "react-qr-code";
 
 
 export const EventView: FC = () => {
@@ -26,7 +27,10 @@ export const EventView: FC = () => {
     const [editorEvent, setEditorEvent] = useState<any>(undefined);
     const [editorPass, setEditorPass] = useState<any>(undefined);
 
+    const [secretKey, setSecretKey] = useState<any>(undefined);
+
     const emptyEvent = {
+        pubKey: 0,
         offset: -1,
         ticketsLimit: "",
         ticketsIssued: "",
@@ -60,8 +64,8 @@ export const EventView: FC = () => {
             const [accDataOrganizer, bumpOrganizer] = await deriveOrganizer(program, publicKey);
 
             // Try to load organizer account
-            let offsetEvent = 0;
-            let offsetPass = 0;
+            let offsetEvent: any = 0;
+            let offsetPass: any = 0;
             try {
                 const chainOrganizer = await program.account.organizer.fetch(accDataOrganizer);
                 offsetEvent = chainOrganizer.counterEvents;
@@ -78,7 +82,7 @@ export const EventView: FC = () => {
 
                 try {
                     const event = await program.account.event.fetch(accDataEvent);
-                    await upsertEvent({offset: i, ...event}, true)
+                    await upsertEvent({pubKey: accDataEvent, offset: i, ...event}, true)
                 } catch (e) {
                 }
             }
@@ -160,7 +164,7 @@ export const EventView: FC = () => {
 
         const program = ticketProgram(connection, anchorWallet);
         const [accDataOrganizer, bumpOrganizer] = await deriveOrganizer(program, publicKey);
-        let accountOffset = 0;
+        let accountOffset: any = 0;
 
         // If the offset is not negative, we are editing some event
         if (editorEvent.offset >= 0) {
@@ -248,7 +252,7 @@ export const EventView: FC = () => {
 
         const program = ticketProgram(connection, anchorWallet);
         const [accDataOrganizer, bumpOrganizer] = await deriveOrganizer(program, publicKey);
-        let accountOffset = 0;
+        let accountOffset: any = 0;
 
         // If the offset is not negative, we are editing some pass
         if (editorPass.offset >= 0) {
@@ -414,6 +418,7 @@ export const EventView: FC = () => {
                 {view === "editOrganizer" ? showOrganizerEditor() : ""}
                 {view === "editEvent" ? showEventEditor() : ""}
                 {view === "editPass" ? showPassEditor() : ""}
+                {view === "editPassEvents" ? showPassEventsEditor() : ""}
             </>
         );
     }
@@ -423,6 +428,7 @@ export const EventView: FC = () => {
             <>
                 <div className="flex flex-row flex-wrap">
                     {showEventCard({
+                        pubKey: 0,
                         offset: -1,
                         title: "Create an Event",
                         artwork: "https://fs-prod-cdn.nintendo-europe.com/media/images/10_share_images/games_15/wii_24/SI_Wii_EACreate_image1600w.jpg"
@@ -510,17 +516,17 @@ export const EventView: FC = () => {
         return (
             <>
                 <div className="flex flex-row flex-wrap">
-                    {showPassCard({
+                    {showEventPassCard({
                         offset: -1,
                         title: "Create an Event Pass",
                         artwork: "https://fs-prod-cdn.nintendo-europe.com/media/images/10_share_images/games_15/wii_24/SI_Wii_EACreate_image1600w.jpg"
                     })}
-                    {passes.map(pass => showPassCard(pass))}
+                    {passes.map(pass => showEventPassCard(pass))}
                 </div>
             </>
         );
     }
-    const showPassCard = (pass) => {
+    const showEventPassCard = (pass) => {
         return (
             <div className="p-5 w-full basis-1/1 md:basis-1/2 lg:basis-1/4" key={pass.offset}>
                 <div className="h-full card bg-neutral bg-base-300">
@@ -533,7 +539,15 @@ export const EventView: FC = () => {
                         {
                             pass.offset >= 0 ?
                                 <>
+                                    <p><b>Tickets per user:</b><span className="float-right">{pass.limitTickets}</span>
+                                    </p>
+                                    {showPassHolders(pass.counterHolders, pass.limitHolders)}
                                     <div className="h-full items-end card-actions justify-end">
+                                        <button className="btn btn-sm btn-info"
+                                                onClick={() => {
+                                                    setView("editPassEvents")
+                                                }}>Add Events
+                                        </button>
                                         <button className="btn btn-sm btn-secondary"
                                                 onClick={() => {
                                                     setEditorPass(pass)
@@ -562,6 +576,12 @@ export const EventView: FC = () => {
                 </div>
             </div>
         );
+    }
+    const showPassHolders = (issued, total) => {
+        return <>
+            <p><b>Holders:</b><span className="float-right">{issued} / {total}</span></p>
+            <progress className="my-2 min-h-[6px] progress progress-info" value={issued} max={total}></progress>
+        </>
     }
 
     const showSpinner = () => {
@@ -697,6 +717,52 @@ export const EventView: FC = () => {
                             }}>Close
                     </button>
                 </div>
+                {showEventDetails()}
+            </div>
+        </>
+    }
+    const showEventDetails = () => {
+        // Do not show when creating new events
+        if (editorEvent.offset < 0) {
+            return <></>
+        }
+
+        let qr = <p className="my-5">Enter the secret key for the ticket check in authority to generate a qr code that
+            can be used to configure the ticket scanner app.</p>
+        if (secretKey) {
+            let keyPair = getKeyPairForSecretKeyBase58(secretKey);
+            console.log("KEY ", keyPair.publicKey.toBase58(), ' ', editorEvent.ticketAuthorityCheckIn.toBase58());
+            if (keyPair && keyPair.publicKey.toBase58() === editorEvent.ticketAuthorityCheckIn.toBase58()) {
+                let encoded = Buffer.from(JSON.stringify(
+                    {na: editorEvent.title, sc: secretKey, ev: editorEvent.pubKey}
+                )).toString('base64');
+                qr = <>
+                    <div className="my-5">
+                        <QRCode className="m-auto" value={encoded}/>
+                    </div>
+                    <p>Use this code to configure the ticket reader application. You will need to provide the secret key
+                        for the account that is the ticket check in authority.</p>
+                </>
+            }
+        }
+        return <>
+            <hr className="my-5"/>
+            <div className="py-4">
+                <div className="form-control w-full">
+                    <label className="label">
+                        <span className="label-text">Event Public Key</span>
+                    </label>
+                    <input readOnly type="text" name="eventPubKey" value={editorEvent.pubKey}
+                           className="input input-bordered input-primary w-full"/>
+                </div>
+                <div className="form-control w-full">
+                    <label className="label">
+                        <span className="label-text">Check in authority (Secret Key)</span>
+                    </label>
+                    <input type="text" name="website" value={secretKey} onChange={updateSecret}
+                           className="input input-bordered input-primary w-full"/>
+                </div>
+                {qr}
             </div>
         </>
     }
@@ -709,6 +775,10 @@ export const EventView: FC = () => {
             value = unixTime;
         }
         setEditorEvent({...editorEvent, [name]: value});
+    };
+
+    const updateSecret = (e) => {
+        setSecretKey(e.target.value)
     };
 
     const showPassEditor = () => {
@@ -789,6 +859,12 @@ export const EventView: FC = () => {
         setEditorPass({...editorPass, [name]: value});
     };
 
+    const showPassEventsEditor = () => {
+        return <>
+            TODO
+        </>
+    };
+
     return <>
         {view === "loading" ? showSpinner() : ""}
         {view !== "loading" && organizer.offset < 0 ? createOrganizerHero() : ''}
@@ -800,6 +876,12 @@ export const EventView: FC = () => {
 
 // TODO edit passed
 // TODO add an event to a pass
+
+//TODO break this up in 2 files
+
+//TODO do I need quicknode.com (apparently docu says do not use public one)
+use code STOCKHOLM299
+bit.ly/stockholmhh
 
 TODO: need a function to delete an individual ticket - requires seat_id - clarify this won't refund
 TODO: need a function to delete all ticket accounts & the event itself - "Delete Event" DANGER ZONE

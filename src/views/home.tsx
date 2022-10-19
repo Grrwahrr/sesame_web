@@ -18,8 +18,9 @@ export const HomeView: FC = ({}) => {
                 </div>
             </div>
 
-            <p className="p-5 w-full md:w-3/5 m-auto">The Sesame ticket system runs on the public Solana blockchain. The
-                blockchains high throughput and speed enables Sesame to handle large events. This app does not store
+            <p className="p-5 w-full md:w-3/5 m-auto">The Ticket Sensei system runs on the public Solana blockchain. The
+                blockchains high throughput and speed enables Ticket Sensei to handle large events. This app does not
+                store
                 data for you. Thus this app can be used for free. Interacting with the blockchain does however require
                 some amount of SOL tokens.</p>
 
@@ -28,7 +29,8 @@ export const HomeView: FC = ({}) => {
                     <div className="max-w-md">
                         <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-tr from-[#CC6677] to-[#00AADD]">NFTs
                             for your audience</h1>
-                        <p className="py-6">Sesame is a blockchain based application. As such, it is possible for your
+                        <p className="py-6">Ticket Sensei is a blockchain based application. As such, it is possible for
+                            your
                             audience to create their own NFT. This NFT is of the POAP kind (Proof of Attendance /
                             Participation)</p>
                         <Link href="/docs">

@@ -29,11 +29,6 @@ export const ContentContainer: FC = props => {
                             <a>Manage Event</a>
                         </Link>
                     </li>
-                    <li>
-                        <Link href="/nft">
-                            <a>Mint NFT</a>
-                        </Link>
-                    </li>
                 </ul>
             </div>
         </div>

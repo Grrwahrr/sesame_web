@@ -3,7 +3,7 @@ import {LAMPORTS_PER_SOL, TransactionSignature} from '@solana/web3.js';
 import {FC, useCallback} from 'react';
 import {notify} from "../utils/notifications";
 import useUserSOLBalanceStore from '../stores/useUserSOLBalanceStore';
-import {notifyTxError} from "../utils/dapp_lib";
+import {notifyTxError} from "../utils/solana";
 
 export const RequestAirdrop: FC = () => {
     const {connection} = useConnection();

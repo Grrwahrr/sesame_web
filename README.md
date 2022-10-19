@@ -14,54 +14,21 @@ Manually creating tickets should be on the organizer site, as I can't mail them 
 
 Deleting could be here, as I have no control over payments anyway? At least not now.
 
-Create a key from seeds
-
-```javascript
-Keypair.fromSeed(Uint8Array.from([
-   174, 47, 154, 16, 202, 193, 206, 113, 199, 190, 53, 133, 169, 175, 31, 56,
-   222, 53, 138, 189, 224, 216, 117, 173, 10, 149, 53, 45, 73, 251, 237, 246,
-   15, 185, 186, 82, 177, 240, 148, 69, 241, 227, 167, 80, 141, 89, 240, 121,
-   121, 35, 172, 247, 68, 251, 226, 218, 48, 63, 176, 109, 168, 89, 238, 135,
-]))
-console.log(PublicKey.isOnCurve(key.toBytes()));
-```
 
 ```
 //TODO store these from real data, ADD THE OFFSET!
 
-//     {
-//         offset: 0,
-//         ticketsLimit: 500,
-//         ticketsIssued: 12,
-//         timestamp: 1661256000,
-//         locationType: "URL",
-//         location: "https://www.google.com",
 //         title: "Awesome Film Festival",
 //         website: "https://www.google.com",
 //         artwork: "https://blog.walls.io/wp-content/uploads/2017/02/ideas-for-making-event-more-social.jpg"
-//     },
-//     {
-//         offset: 1,
-//         ticketsLimit: 200,
-//         ticketsIssued: 180,
-//         timestamp: 1663689600,
-//         locationType: "GPS",
-//         location: "52.542417,13.429639",
+
 //         title: "Crazy Horse Show",
 //         website: "https://www.google.com",
 //         artwork: "https://intheory.events/wp-content/uploads/2020/11/op_livestreaming_event_stage-1-1536x864.jpg"
-//     },
-//     {
-//         offset: 2,
-//         ticketsLimit: 600,
-//         ticketsIssued: 432,
-//         timestamp: 1661011200,
-//         locationType: "TXT",
-//         location: "Brotfabrik Berlin",
+
 //         title: "Tea Drinking Meetup",
 //         website: "https://www.google.com",
 //         artwork: "https://myhaneerbil.com/wp-content/uploads/960x0.jpg"
-//     },
 ```
 
 Sign messages
